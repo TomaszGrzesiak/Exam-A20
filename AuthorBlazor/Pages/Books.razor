@@ -1,6 +1,5 @@
 @page "/Books"
 @using Domain.Models
-@using UIElements
 @using AuthorBlazor.HttpService
 @inject NavigationManager NavMgr
 @inject HttpService _httpService;
@@ -10,49 +9,51 @@
 <div class="filterbar">
     <div class="filterscontainer">
         <img src="img/@(doShowFilters?"clear_" : "")funnel.png" 
-        class="funnel" 
-        @onclick="OpenCloseFilters"/>
+             class="funnel" 
+             @onclick="OpenCloseFilters"/>
         
         @if (doShowFilters)
         {
-            <EditForm Model="@newBook" OnValidSubmit="@ApplyFilters">
+            <EditForm Model="@modelBook" OnValidSubmit="@ApplyFilters">
                 <div class="form-group field">
                     <span>
                         <label>Author: </label>
                     </span>
                     <span>
-                            <InputSelect @bind-Value="@authorsFirstNameFilter" class="form-select">
-                                @if (allAuthors != null)
+                        <InputSelect @bind-Value="@authorsFirstNameFilter" class="form-select">
+                            <option value=""> </option>
+                            @if (allAuthors != null)
+                            {
+                                @foreach (var a in allAuthors)
                                 {
-                                    @foreach (var a in allAuthors)
-                                    {
-                                        <option value="@a.FirstName">@a.FirstName @a.LastName</option>
-                                    }
+                                    <option value="@a.FirstName">@a.FirstName @a.LastName</option>
                                 }
-                            </InputSelect>
+                            }
+                        </InputSelect>
                     </span>
-        </div>  
-        <div class="form-group field">
+                </div>  
+                <div class="form-group field">
                     <span>
                         <label>Book title: </label>
                     </span>
                     <span>
-                            <InputSelect @bind-Value="@bookTitleFilter" class="form-select">
-                                @if (allBooks != null)
+                        <InputSelect @bind-Value="@bookTitleFilter" class="form-select">
+                            <option value=""> </option>
+                            @if (allBooks != null)
+                            {
+                                @foreach (var book in allBooks)
                                 {
-                                    @foreach (var book in allBooks)
-                                    {
-                                        <option value="@book.Title">@book.Title</option>
-                                    }
+                                    <option value="@book.Title">@book.Title</option>
                                 }
-                            </InputSelect>
+                            }
+                        </InputSelect>
                     </span>
-        </div>          
-        <p class="actions">
+                </div>          
+                <p class="actions">
                     <button class="btn btn-outline-dark acceptbtn" type="submit">Apply filter</button>
+                    <button class="btn btn-outline-dark acceptbtn" type="reset" @onclick="ResetFilter">Remove filter</button>
                 </p>
             </EditForm>
-            <label>Error label: <br/> ((..)) @errorLabel</label>
         }
     </div>
 </div>
@@ -98,18 +99,17 @@ else
         </tbody>
     </table>
 }
+
 @if (!string.IsNullOrEmpty(errorLabel))
 {
-    <label style="color: red">@errorLabel</label>
+    <label style="color: red">Error label: <br/> @errorLabel</label>
 }
 
 @code {
     private string errorLabel = "";
-    private Book newBook = new();
-    private Author author = new ();
-    private List<Author> allAuthors;
-    private List<Book> booksToShow, allBooks;
-    private bool showModal;
+    private Book modelBook = new (); 
+    private List<Author> allAuthors = new();
+    private List<Book> booksToShow = new (), allBooks = new ();
     
     // filtering feature
     private string? authorsFirstNameFilter;
@@ -121,18 +121,18 @@ else
         allBooks = await _httpService.GetAllBooksAsync();
         allAuthors = await _httpService.GetAllAuthorsAsync();
         booksToShow = allBooks.ToList();
-        OpenCloseFilters();
+        await OpenCloseFilters();
         await ApplyFilters();
     }
 
-    private async Task RemoveBook(int ISBN)
+    private async Task RemoveBook(int isbn)
     {
         errorLabel = "";
         try
         {
     // var bookToRemove = books.First(book => book.Id == id);
     // books.Remove(bookToRemove);
-            await _httpService.DeleteBookAsync(ISBN);
+            await _httpService.DeleteBookAsync(isbn);
             await ApplyFilters();
             allBooks = await _httpService.GetAllBooksAsync();
         }
@@ -156,5 +156,12 @@ else
     private async Task ApplyFilters()
     {
         booksToShow =  await _httpService.GetBooksFilteredAsync(authorsFirstNameFilter, bookTitleFilter);
+    }
+
+    private async Task ResetFilter()
+    {
+        bookTitleFilter = "";
+        authorsFirstNameFilter = "";
+        await ApplyFilters();
     }
 }

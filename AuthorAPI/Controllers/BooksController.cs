@@ -31,7 +31,6 @@ public class BooksController : ControllerBase
             Book bookAdded = addedEntityEntry.Entity;
             existingAuthor.Books.Add(bookAdded);
             await context.SaveChangesAsync();
-            Console.WriteLine(existingAuthor);
             return Created($"/books/{bookAdded.ISBN}", bookAdded);
         }
         catch (Exception e)

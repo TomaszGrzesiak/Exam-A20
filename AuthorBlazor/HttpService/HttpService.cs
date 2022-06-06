@@ -98,7 +98,6 @@ public class HttpService
 
     public async Task<List<Book>> GetBooksFilteredAsync(string? authorsFirstNameFilter, string? bookTitleFilter)
     {
-        Console.WriteLine($". Sent params: Author: {authorsFirstNameFilter}, title: {bookTitleFilter}");
         HttpResponseMessage responseMessage = await httpClient.GetAsync($"{HOST}/Books?authorsFirstNameFilter={authorsFirstNameFilter}&bookTitleFilter={bookTitleFilter}");
         string content = await responseMessage.Content.ReadAsStringAsync();
         
