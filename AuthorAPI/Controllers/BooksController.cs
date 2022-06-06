@@ -27,10 +27,12 @@ public class BooksController : ControllerBase
             Author? existingAuthor = await context.Author.FindAsync(authorId);
             if (existingAuthor is null)
                 throw new Exception($"Could not find an author with id {authorId}. No book was added.");
+            book.Author = existingAuthor;
             EntityEntry<Book> addedEntityEntry = await context.Book.AddAsync(book);
             Book bookAdded = addedEntityEntry.Entity;
-            existingAuthor.Books.Add(bookAdded);
+            //existingAuthor.Books.Add(bookAdded);
             await context.SaveChangesAsync();
+            bookAdded.Author!.Books = new List<Book>();
             return Created($"/books/{bookAdded.ISBN}", bookAdded);
         }
         catch (Exception e)

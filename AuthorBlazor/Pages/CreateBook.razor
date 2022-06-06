@@ -24,7 +24,6 @@
                             {
                                 <option value="@author.Id">@author.FirstName @author.LastName</option>
                             }
-                            author = _authors.FirstOrDefault()!;
                         }
                     </InputSelect>
             </span>
@@ -68,7 +67,7 @@
             <span>
                 <InputNumber	@bind-Value="newBook.NumOfPages"/>
             </span>
-        </div>                
+        </div>
         <p class="actions">
             <button class="btn btn-outline-dark acceptbtn" type="submit">Create</button>
         </p>
@@ -98,6 +97,10 @@
                     <tr>
                         <th>Pages: </th>
                         <td>@newBook.NumOfPages</td>
+                    </tr>
+                    <tr>
+                        <th>Author: </th>
+                        <td>@newBook.Author.FirstName @newBook.Author.LastName</td>
                     </tr>                    
                 </table>  
                 <button @onclick="@Proceed">OK</button>
@@ -114,6 +117,7 @@
     protected override async Task OnInitializedAsync()
     {
         _authors = await _httpService.GetAllAuthorsAsync();
+        author = _authors.FirstOrDefault()!;
     }
     
     private int SelectedAuthorId
