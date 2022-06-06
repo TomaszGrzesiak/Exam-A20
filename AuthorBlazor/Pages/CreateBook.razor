@@ -1,0 +1,145 @@
+@page "/CreateBook"
+@using Domain.Models
+@using UIElements
+@using AuthorBlazor.HttpService
+@inject NavigationManager NavMgr
+@inject HttpService _httpService;
+
+<h3>CreateBook</h3>
+
+<div class="box">
+    <h3>Add Book</h3>
+    <EditForm Model="@newBook" OnValidSubmit="@AddNewBook">
+        <DataAnnotationsValidator/> 
+        <ValidationSummary/>
+        <div class="form-group field">
+            <span>
+                <label>Author: </label>
+            </span>
+            <span>
+                    <InputSelect @bind-Value="@SelectedAuthorId" class="form-select">
+                        @if (_authors != null)
+                        {
+                            @foreach (var author in _authors)
+                            {
+                                <option value="@author.Id">@author.FirstName @author.LastName</option>
+                            }
+                            author = _authors.FirstOrDefault()!;
+                        }
+                    </InputSelect>
+            </span>
+        </div>        
+        <div class="form-group field">
+            <span>
+                <label>ISBN: </label>
+            </span>
+            <span>
+                <InputNumber @bind-Value="newBook.ISBN" />
+            </span>
+        </div>
+        <div class="form-group field">
+            <span>
+                <label>Title:</label>
+            </span>
+            <span>
+                <InputText	@bind-Value="newBook.Title"/>
+            </span>
+        </div>
+        <div class="form-group field">
+            <span>
+                <label>Genre:</label>
+            </span>
+            <span>
+                <InputText	@bind-Value="newBook.Genre"/>
+            </span>
+        </div>
+        <div class="form-group field">
+            <span>
+                <label>Publication year:</label>
+            </span>
+            <span>
+                <InputNumber	@bind-Value="newBook.PublicationYear"/>
+            </span>
+        </div>        
+        <div class="form-group field">
+            <span>
+                <label>Number of pages:</label>
+            </span>
+            <span>
+                <InputNumber	@bind-Value="newBook.NumOfPages"/>
+            </span>
+        </div>                
+        <p class="actions">
+            <button class="btn btn-outline-dark acceptbtn" type="submit">Create</button>
+        </p>
+    </EditForm>
+    <label>Error label: <br/> ((..)) @errorLabel</label>
+     @if (showModal)
+        {
+            <Modal>
+                <p>You have successfully added a new Book.</p>
+                <table>
+                    <tr>
+                        <th>ISBN: </th>
+                        <td>@newBook.ISBN</td>
+                    </tr>
+                    <tr>
+                        <th>Title: </th>
+                        <td>@newBook.Title</td>
+                    </tr>
+                    <tr>
+                        <th>Genre: </th>
+                        <td>@newBook.Genre</td>
+                    </tr>
+                    <tr>
+                        <th>Publication year: </th>
+                        <td>@newBook.PublicationYear</td>
+                    </tr>                    
+                    <tr>
+                        <th>Pages: </th>
+                        <td>@newBook.NumOfPages</td>
+                    </tr>                    
+                </table>  
+                <button @onclick="@Proceed">OK</button>
+            </Modal>
+        }
+</div>
+@code {
+    Book newBook = new();
+    Author author = new Author();
+    List<Author> _authors;
+    private string errorLabel;
+    private bool showModal;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _authors = await _httpService.GetAllAuthors();
+    }
+    
+    private int SelectedAuthorId
+    {
+        get => author.Id;
+        set => author = _authors.Single(a => a.Id == value);
+    }
+
+    private async Task AddNewBook()
+    {
+        errorLabel = "";
+        try
+        {
+            newBook = await _httpService.AddBook(newBook, author.Id);
+            showModal = true;
+        }
+        catch (Exception e)
+        {
+            errorLabel = e.Message;
+        }
+    }
+    
+    private void Proceed()
+    {
+        newBook = new Book();
+        showModal = false;
+        NavMgr.NavigateTo("/CreateBook");
+    }
+}

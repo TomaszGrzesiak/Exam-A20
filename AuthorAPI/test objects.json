@@ -1,0 +1,18 @@
+
+{
+  "firstName": "author1",
+  "lastName": "lastname1"
+}
+
+{
+  "isbn": 1,
+  "title": "book title 1",
+  "publicationYear": 1987,
+  "numOfPages": 99,
+  "genre": "genre 1",
+  "author": {
+    "id": 0,
+    "firstName": "string",
+    "lastName": "string"
+  }
+}
