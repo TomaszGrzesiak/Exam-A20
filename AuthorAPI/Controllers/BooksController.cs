@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 namespace AuthorAPI.Controllers;
 
 [ApiController]
-[Route("[Controller]")]
+[Route("[controller]")]
 public class BooksController : ControllerBase
 {
     private Context context;
@@ -40,14 +40,39 @@ public class BooksController : ControllerBase
         }
     }
 
+    // [HttpGet]
+    // public async Task<ActionResult<ICollection<Book>>> GetALlAsync()
+    // {
+    //     try
+    //     {
+    //         ICollection<Book> books = await context.Book
+    //             .ToListAsync();
+    //         return Ok(books);
+    //     }
+    //     catch (Exception e)
+    //     {
+    //         return StatusCode(500, e.Message);
+    //     }
+    // }
+    
     [HttpGet]
-    public async Task<ActionResult<ICollection<Book>>> GetALl()
+    public async Task<ActionResult<ICollection<Book>>> GetBooksFilteredAsync([FromQuery] string? authorsFirstNameFilter, [FromQuery] string? bookTitleFilter)
     {
         try
         {
-            ICollection<Book> books = await context.Book
-                .ToListAsync();
-            return Ok(books);
+           
+            IQueryable<Book> books = context.Book.AsQueryable()
+                .Include(b => b.Author);
+            if (authorsFirstNameFilter != null)
+                books = books.Where(b => b.Author.FirstName.ToLower().Contains(authorsFirstNameFilter.ToLower()));
+            if (bookTitleFilter != null)
+                books = books.Where(b => b.Title.ToLower().Contains(bookTitleFilter.ToLower()));
+            
+            var result = await books.ToListAsync();
+            // the line below is to remove the inevitable cycle reference, which makes problem when serializing to and from JSON
+            foreach (var b in result) b.Author!.Books = new List<Book>();
+            
+            return Ok(result);
         }
         catch (Exception e)
         {

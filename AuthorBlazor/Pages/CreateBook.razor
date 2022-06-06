@@ -113,7 +113,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _authors = await _httpService.GetAllAuthors();
+        _authors = await _httpService.GetAllAuthorsAsync();
     }
     
     private int SelectedAuthorId
@@ -127,7 +127,7 @@
         errorLabel = "";
         try
         {
-            newBook = await _httpService.AddBook(newBook, author.Id);
+            newBook = await _httpService.AddBookAsync(newBook, author.Id);
             showModal = true;
         }
         catch (Exception e)

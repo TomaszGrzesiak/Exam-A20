@@ -10,6 +10,7 @@ public class Book
     public int? PublicationYear { set; get; } = 0;
     public int? NumOfPages { set; get; } = 0;
     public string? Genre { set; get; } = null;
+    public Author? Author { get; set; } = null;
 
     public Book()
     {

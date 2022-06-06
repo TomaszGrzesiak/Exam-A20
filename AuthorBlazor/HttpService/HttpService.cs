@@ -30,7 +30,7 @@ public class HttpService
         return returned;
     }
     
-    public async Task<List<Author>> GetAllAuthors()
+    public async Task<List<Author>> GetAllAuthorsAsync()
     {
         HttpResponseMessage responseMessage = await httpClient.GetAsync(HOST+"/Authors/");
         string content = await responseMessage.Content.ReadAsStringAsync();
@@ -47,7 +47,7 @@ public class HttpService
         return authors;
     }
 
-    public async Task<Book> AddBook(Book book, int authorId)
+    public async Task<Book> AddBookAsync(Book book, int authorId)
     {
         string bookAsJson = JsonSerializer.Serialize(book);
         StringContent content = new(bookAsJson, Encoding.UTF8, "application/json");
@@ -67,7 +67,7 @@ public class HttpService
         return returned;
     }
     
-    public async Task<List<Book>> GetAllBooks()
+    public async Task<List<Book>> GetAllBooksAsync()
     {
         HttpResponseMessage responseMessage = await httpClient.GetAsync(HOST+"/Books/");
         string content = await responseMessage.Content.ReadAsStringAsync();
@@ -82,10 +82,9 @@ public class HttpService
             PropertyNameCaseInsensitive = true
         })!;
         return books;
-
     }
     
-    public async Task DeleteBook(int ISBN)
+    public async Task DeleteBookAsync(int ISBN)
     {
         using HttpClient httpClient = new();
         HttpResponseMessage responseMessage = await httpClient.DeleteAsync(HOST+"/Books/"+ISBN);
@@ -97,4 +96,21 @@ public class HttpService
         }
     }
 
+    public async Task<List<Book>> GetBooksFilteredAsync(string? authorsFirstNameFilter, string? bookTitleFilter)
+    {
+        Console.WriteLine($". Sent params: Author: {authorsFirstNameFilter}, title: {bookTitleFilter}");
+        HttpResponseMessage responseMessage = await httpClient.GetAsync($"{HOST}/Books?authorsFirstNameFilter={authorsFirstNameFilter}&bookTitleFilter={bookTitleFilter}");
+        string content = await responseMessage.Content.ReadAsStringAsync();
+        
+        if (!responseMessage.IsSuccessStatusCode)
+        {
+            throw new Exception($"Error: {responseMessage.StatusCode}, {content}");
+        }
+
+        List<Book> books = JsonSerializer.Deserialize<List<Book>>(content, new JsonSerializerOptions()
+        {
+            PropertyNameCaseInsensitive = true
+        })!;
+        return books;
+    }
 }

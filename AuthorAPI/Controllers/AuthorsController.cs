@@ -19,7 +19,7 @@ public class AuthorsController : ControllerBase
     
     [HttpPost]
     //[Route("/Author/")] // without this line, it would work like there 'd be "/Authors"
-    public async Task<ActionResult<Author>> AddAuthor([FromBody] Author author)
+    public async Task<ActionResult<Author>> AddAuthorAsync([FromBody] Author author)
     {
         try
         {
@@ -35,13 +35,15 @@ public class AuthorsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<ICollection<Author>>> GetALl()
+    public async Task<ActionResult<ICollection<Author>>> GetALlAsync()
     {
         try
         {
             ICollection<Author> authors = await context.Author
                 .Include(a => a.Books)
                 .ToListAsync();
+            // the line below is to remove the inevitable cycle reference, which makes problem when serializing to and from JSON 
+            foreach (var a in authors) foreach (var bs in a.Books) bs.Author = null;
             return Ok(authors);
         }
         catch (Exception e)
